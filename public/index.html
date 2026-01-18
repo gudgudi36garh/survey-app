@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>Central Bank of India - Feedback</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #004d99;
+      --secondary: #e31e24;
+      --light: #f4f7f9;
+      --dark: #333;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: #eef2f5;
+      color: var(--dark);
+      line-height: 1.5;
+      display: flex;
+      justify-content: center;
+    }
+
+    .mobile-container {
+      width: 100%;
+      max-width: 480px;
+      background: white;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 0 20px rgba(0,0,0,0.15);
+    }
+
+    .img-fluid { width: 100%; height: auto; display: block; }
+    .logo-container { padding: 12px; background: #fff; border-bottom: 1px solid #eee; }
+    .banner-container { border-bottom: 4px solid var(--primary); }
+
+    .content-padding { padding: 20px; }
+    header { text-align: center; margin-bottom: 25px; }
+    h1 { color: var(--primary); font-size: 1.5rem; margin-bottom: 5px; }
+    header p { font-size: 0.95rem; color: #666; }
+
+    .form-group { margin-bottom: 20px; }
+    label { display: block; margin-bottom: 8px; font-weight: 500; font-size: 0.9rem; color: #444; }
+    .label-hindi { display: block; font-size: 0.95rem; color: var(--primary); font-weight: 700; margin-bottom: 2px; }
+    
+    input[type="text"], input[type="tel"], select, textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #cbd5e0;
+      border-radius: 8px;
+      font-size: 1rem;
+      background: #fff;
+    }
+
+    fieldset {
+      border: 1px solid #edf2f7;
+      margin: 20px 0;
+      padding: 15px;
+      border-radius: 12px;
+      background: #f8fbff;
+    }
+    legend { font-weight: 600; color: var(--primary); padding: 0 10px; font-size: 0.85rem; }
+
+    .star-rating { display: flex; flex-direction: row-reverse; justify-content: flex-end; }
+    .star-rating input { display: none; }
+    .star-rating label { font-size: 2.2rem; color: #cbd5e0; cursor: pointer; padding: 0 4px; transition: color 0.2s; }
+    .star-rating input:checked ~ label, .star-rating label:hover, .star-rating label:hover ~ label { color: #f39c12; }
+    .star-rating.large label { font-size: 3rem; }
+
+    .radio-option { display: block; margin-bottom: 10px; background: #fff; border: 1px solid #e2e8f0; padding: 10px; border-radius: 6px; cursor: pointer; }
+    .radio-option input { margin-right: 10px; }
+
+    button {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 18px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      border-radius: 10px;
+      width: 100%;
+      cursor: pointer;
+      margin-top: 10px;
+      box-shadow: 0 4px 6px rgba(0,77,153,0.2);
+    }
+
+    .footer-banner { margin-top: 40px; border-top: 2px solid #eee; }
+
+    @media print {
+      body { background: white; }
+      .mobile-container { box-shadow: none; max-width: 100%; }
+      button { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="mobile-container">
+    <div class="logo-container">
+      <img src="logo.png" alt="Central Bank of India Logo" class="img-fluid">
+    </div>
+
+    <div class="banner-container">
+      <img src="banner.png" alt="CBI Achievement" class="img-fluid">
+    </div>
+
+    <div class="content-padding">
+      <header>
+        <h1>Share Your Experience</h1>
+        <p>Branch Visit Feedback Form <br> <span style="font-size: 0.85rem; color: #666;">शाखा आगमन प्रतिक्रिया प्रपत्र</span></p>
+      </header>
+
+      <form id="surveyForm">
+        <div class="form-group">
+          <label>Your Full Name * <br><small>आपका पूरा नाम</small></label>
+          <input type="text" name="name" required>
+        </div>
+
+        <div class="form-group">
+          <label>Mobile Number * <br><small>मोबाइल नंबर</small></label>
+          <input type="tel" name="mobile" pattern="[0-9]{10}" required title="10-digit mobile number">
+        </div>
+
+        <div class="form-group">
+          <label>Purpose of Visit * <br><small>आगमन का उद्देश्य</small></label>
+          <input type="text" name="purpose" placeholder="e.g., Loan, Deposit" required>
+        </div>
+
+        <div class="form-group">
+          <label>Region * <br><small>क्षेत्र</small></label>
+          <select name="region" required>
+            <option value="">Select Region</option>
+            <option>Bhopal</option><option>Indore</option><option>Jabalpur</option>
+            <option>Gwalior</option><option>Sagar</option><option>Ratlam</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Branch Name * <br><small>शाखा का नाम</small></label>
+          <input type="text" name="branch" required>
+        </div>
+
+        <fieldset>
+          <legend>Branch Cleanliness & Ambience <br><small>शाखा की स्वच्छता और वातावरण</small></legend>
+          <div class="star-rating">
+            <input type="radio" id="c5" name="cleanliness" value="5" required><label for="c5">★</label>
+            <input type="radio" id="c4" name="cleanliness" value="4"><label for="c4">★</label>
+            <input type="radio" id="c3" name="cleanliness" value="3"><label for="c3">★</label>
+            <input type="radio" id="c2" name="cleanliness" value="2"><label for="c2">★</label>
+            <input type="radio" id="c1" name="cleanliness" value="1"><label for="c1">★</label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Basic Facilities (Water, Seating, etc.) <br><small>मूलभूत सुविधाएं (पानी, बैठने की व्यवस्था, आदि)</small></legend>
+          <div class="star-rating">
+            <input type="radio" id="f5" name="facilities" value="5" required><label for="f5">★</label>
+            <input type="radio" id="f4" name="facilities" value="4"><label for="f4">★</label>
+            <input type="radio" id="f3" name="facilities" value="3"><label for="f3">★</label>
+            <input type="radio" id="f2" name="facilities" value="2"><label for="f2">★</label>
+            <input type="radio" id="f1" name="facilities" value="1"><label for="f1">★</label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Staff Behavior & Courtesy * <br><small>कर्मचारियों का व्यवहार और शिष्टाचार</small></legend>
+          <div class="star-rating">
+            <input type="radio" id="s5" name="staff_behavior" value="5" required><label for="s5">★</label>
+            <input type="radio" id="s4" name="staff_behavior" value="4"><label for="s4">★</label>
+            <input type="radio" id="s3" name="staff_behavior" value="3"><label for="s3">★</label>
+            <input type="radio" id="s2" name="staff_behavior" value="2"><label for="s2">★</label>
+            <input type="radio" id="s1" name="staff_behavior" value="1"><label for="s1">★</label>
+          </div>
+        </fieldset>
+
+        <div class="form-group">
+          <label>Help with digital banking services? * <br><small>डिजिटल बैंकिंग सेवाओं में सहायता मिली?</small></label>
+          <label class="radio-option"><input type="radio" name="digital_help" value="Yes" required> Yes (हाँ)</label>
+          <label class="radio-option"><input type="radio" name="digital_help" value="No"> No (नहीं)</label>
+        </div>
+
+        <div class="form-group">
+          <label class="label-hindi">क्या शाखा का कामकाज पारदर्शी और भरोसेमंद लगा?</label>
+          <label>Did you find the branch's functioning transparent and trustworthy? *</label>
+          <label class="radio-option"><input type="radio" name="transparency" value="Yes" required> हाँ (Yes)</label>
+          <label class="radio-option"><input type="radio" name="transparency" value="No"> नहीं (No)</label>
+          <label class="radio-option"><input type="radio" name="transparency" value="Not sure"> सुनिश्चित नहीं (Not sure)</label>
+        </div>
+
+        <div class="form-group">
+          <label>Was your query resolved on time? * <br><small>क्या आपकी समस्या का समय पर समाधान हुआ?</small></label>
+          <label class="radio-option"><input type="radio" name="timely" value="Yes" required> Yes (हाँ)</label>
+          <label class="radio-option"><input type="radio" name="timely" value="No"> No (नहीं)</label>
+        </div>
+
+        <div class="form-group">
+          <label class="label-hindi">आप आने वाले दिनों में किस बैंकिंग उत्पाद के उपयोग के बारे में सोच रहे हैं?</label>
+          <label>Which banking product are you thinking of using in the coming days? *</label>
+          <label class="radio-option"><input type="radio" name="future_product" value="Fixed Deposit" required> सावधि जमा रसीद (Fixed Deposit Receipt)</label>
+          <label class="radio-option"><input type="radio" name="future_product" value="Vehicle Loan"> वाहन ऋण (Vehicle loan)</label>
+          <label class="radio-option"><input type="radio" name="future_product" value="Housing Loan"> आवास ऋण (Housing Loan)</label>
+          <label class="radio-option"><input type="radio" name="future_product" value="Personal Loan"> व्यक्तिगत ऋण (Personal Loan)</label>
+          <label class="radio-option"><input type="radio" name="future_product" value="Business Loan"> बिजनेस लोन (Business Loan)</label>
+          <label class="radio-option"><input type="radio" name="future_product" value="Other Loan"> कोई अन्य ऋण (Any other Loan)</label>
+        </div>
+
+        <fieldset>
+          <legend>Overall Branch Rating * <br><small>कुल शाखा रेटिंग</small></legend>
+          <div class="star-rating large">
+            <input type="radio" id="o5" name="overall" value="5" required><label for="o5">★</label>
+            <input type="radio" id="o4" name="overall" value="4"><label for="o4">★</label>
+            <input type="radio" id="o3" name="overall" value="3"><label for="o3">★</label>
+            <input type="radio" id="o2" name="overall" value="2"><label for="o2">★</label>
+            <input type="radio" id="o1" name="overall" value="1"><label for="o1">★</label>
+          </div>
+        </fieldset>
+
+        <div class="form-group">
+          <label>Suggestions / Comments <br><small>सुझाव / टिप्पणियाँ</small></label>
+          <textarea name="comments" rows="3"></textarea>
+        </div>
+
+        <button type="submit">Submit Feedback / फीडबैक भेजें</button>
+      </form>
+      <div id="response" style="margin-top:20px; text-align:center;"></div>
+    </div>
+
+    <div class="footer-banner">
+      <img src="footer_banner.png" alt="Cyber Fraud Awareness" class="img-fluid">
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('surveyForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const msg = document.getElementById('response');
+      msg.textContent = 'Recording your feedback... (फीडबैक दर्ज किया जा रहा है...)';
+
+      const formData = new FormData(e.target);
+      const data = Object.fromEntries(formData);
+
+      try {
+        const res = await fetch('/api/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        const result = await res.json();
+        if (result.success) {
+          msg.innerHTML = '<span style="color:green">Thank you! Feedback recorded successfully. <br> धन्यवाद! आपकी प्रतिक्रिया सफलतापूर्वक दर्ज की गई।</span>';
+          e.target.reset();
+        }
+      } catch (err) {
+        msg.innerHTML = '<span style="color:red">Error submitting feedback. Please try again.</span>';
+      }
+    });
+  </script>
+</body>
+</html>

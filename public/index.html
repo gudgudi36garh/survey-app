@@ -233,30 +233,43 @@
     </div>
   </div>
 
-  <script>
-    document.getElementById('surveyForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const msg = document.getElementById('response');
-      msg.textContent = 'Recording your feedback... (फीडबैक दर्ज किया जा रहा है...)';
+<script>
+  document.getElementById('surveyForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-      const formData = new FormData(e.target);
-      const data = Object.fromEntries(formData);
+    const msg = document.getElementById('response');
+    msg.textContent = 'Recording your feedback... (फीडबैक दर्ज किया जा रहा है...)';
 
-      try {
-        const res = await fetch('/api/submit', {
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData.entries());
+
+    try {
+      const res = await fetch(
+        'https://survey-backend.YOURNAME.workers.dev/api/submit',
+        {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data)
-        });
-        const result = await res.json();
-        if (result.success) {
-          msg.innerHTML = '<span style="color:green">Thank you! Feedback recorded successfully. <br> धन्यवाद! आपकी प्रतिक्रिया सफलतापूर्वक दर्ज की गई।</span>';
-          e.target.reset();
         }
-      } catch (err) {
-        msg.innerHTML = '<span style="color:red">Error submitting feedback. Please try again.</span>';
+      );
+
+      if (!res.ok) throw new Error('Request failed');
+
+      const result = await res.json();
+
+      if (result.success) {
+        msg.innerHTML =
+          '<span style="color:green">Thank you! Feedback recorded successfully.<br>धन्यवाद! आपकी प्रतिक्रिया सफलतापूर्वक दर्ज की गई।</span>';
+        e.target.reset();
       }
-    });
-  </script>
+    } catch (err) {
+      console.error(err);
+      msg.innerHTML =
+        '<span style="color:red">Error submitting feedback. Please try again.</span>';
+    }
+  });
+</script>
+
 </body>
+
 </html>

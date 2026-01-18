@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CBI - Marketing Lead Dashboard</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --primary: #004d99;
+      --accent: #e31e24;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+      --text-light: #64748b;
+      --border: #e2e8f0;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: var(--text); padding: 2rem; }
+
+    /* UI Header */
+    .dashboard-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+    .brand h1 { font-size: 1.75rem; color: var(--primary); font-weight: 800; }
+    .brand p { color: var(--text-light); font-size: 0.9rem; }
+
+    /* Button Styling */
+    .btn {
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      border: none;
+      transition: 0.2s;
+    }
+    .btn-main { background: var(--primary); color: white; }
+    .btn-alt { background: white; border: 1.5px solid var(--primary); color: var(--primary); }
+    .btn-excel { background: #15803d; color: white; }
+
+    /* Filter Section */
+    .filter-section {
+      background: var(--card-bg);
+      padding: 1.5rem;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      align-items: end;
+    }
+    .field-group { display: flex; flex-direction: column; gap: 0.5rem; }
+    .field-group label { font-size: 0.75rem; font-weight: 700; color: var(--text-light); text-transform: uppercase; }
+    input, select { 
+      padding: 0.75rem; 
+      border: 1px solid var(--border); 
+      border-radius: 8px; 
+      font-size: 0.9rem; 
+      outline: none;
+      background: #fff;
+    }
+
+    /* Table & Report Styling */
+    .report-container {
+      background: var(--card-bg);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    .report-header {
+      padding: 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    table { width: 100%; border-collapse: collapse; }
+    th { 
+      background: #f1f5f9; 
+      padding: 1rem 1.5rem; 
+      text-align: left; 
+      font-size: 0.75rem; 
+      font-weight: 700; 
+      color: var(--text-light);
+      text-transform: uppercase;
+      border-bottom: 2px solid var(--border);
+    }
+    td { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); font-size: 0.95rem; }
+    
+    .badge-purpose { padding: 0.25rem 0.5rem; background: #f1f5f9; color: #475569; border-radius: 4px; font-size: 0.75rem; font-weight: 500; }
+    .badge-interest { padding: 0.25rem 0.5rem; background: #dcfce7; color: #166534; border-radius: 4px; font-size: 0.75rem; font-weight: 700; border: 1px solid #bbf7d0; }
+
+    /* NATIVE BROWSER PRINT CSS */
+    @media print {
+      @page { margin: 1cm; size: A4 landscape; }
+      body { background: white; padding: 0; color: black; }
+      .filter-section, .btn, .nav-links, .btn-excel { display: none !important; }
+      .dashboard-header { border-bottom: 2px solid black; padding-bottom: 1rem; margin-bottom: 2rem; text-align: center; display: block; }
+      .brand h1 { color: black; font-size: 2.2rem; }
+      .report-container { border: none; box-shadow: none; }
+      th { background-color: #f0f0f0 !important; color: black !important; border-bottom: 2px solid black; -webkit-print-color-adjust: exact; }
+      td { border-bottom: 1px solid #ddd; }
+      tr { page-break-inside: avoid; }
+      .badge-interest { border: 1px solid #166534; color: black; background: transparent !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="dashboard-header">
+    <div class="brand">
+      <h1>Marketing Lead Dashboard</h1>
+      <p>Tracking Customer Visit Purpose vs. Future Product Interest</p>
+    </div>
+    <div class="nav-links">
+      <a href="/dashboard" class="btn btn-alt">Back to Analytics</a>
+      <button class="btn btn-main" onclick="window.print()">Generate PDF Report</button>
+    </div>
+  </header>
+
+  <section class="filter-section">
+    <div class="field-group">
+      <label>From Date</label>
+      <input type="date" id="dateFrom">
+    </div>
+    <div class="field-group">
+      <label>To Date</label>
+      <input type="date" id="dateTo">
+    </div>
+    <div class="field-group">
+      <label>Region</label>
+      <select id="regFilter">
+        <option value="">All Regions</option>
+        <option>Bhopal</option><option>Indore</option><option>Gwalior</option><option>Jabalpur</option>
+      </select>
+    </div>
+    <div class="field-group">
+      <label>Branch</label>
+      <input type="text" id="brSearch" placeholder="Search branch...">
+    </div>
+    <div class="field-group">
+      <label>Lead Interest</label>
+      <select id="prodFilter">
+        <option value="">All Interests</option>
+        <option>Fixed Deposit</option>
+        <option>Vehicle Loan</option>
+        <option>Housing Loan</option>
+        <option>Personal Loan</option>
+        <option>Business Loan</option>
+      </select>
+    </div>
+    <div class="field-group">
+      <button class="btn btn-main" onclick="applyFilters()" style="width: 100%;">Apply Filters</button>
+    </div>
+  </section>
+
+  <div class="report-container">
+    <div class="report-header">
+      <h3 id="leadTitle">Qualified Customer Leads</h3>
+      <button class="btn btn-excel" onclick="exportLeads()">Export to Excel</button>
+    </div>
+    <div style="overflow-x: auto;">
+      <table id="leadTable">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Customer Name</th>
+            <th>Mobile</th>
+            <th>Branch</th>
+            <th>Region</th>
+            <th>Current Purpose</th>
+            <th>Future Interest (Lead)</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    let rawData = [];
+
+    async function init() {
+      try {
+        const res = await fetch('/api/responses');
+        rawData = await res.json();
+        applyFilters();
+      } catch (e) { console.error("Load failed", e); }
+    }
+
+    function applyFilters() {
+      const from = document.getElementById('dateFrom').value;
+      const to = document.getElementById('dateTo').value;
+      const reg = document.getElementById('regFilter').value;
+      const br = document.getElementById('brSearch').value.toLowerCase();
+      const prod = document.getElementById('prodFilter').value;
+
+      const filtered = rawData.filter(i => {
+        const rawTs = i._timestamp || "";
+        const entryDate = rawTs.substring(0, 10).replace(/:/g, '-');
+
+        const matchFrom = !from || entryDate >= from;
+        const matchTo = !to || entryDate <= to;
+        const matchReg = !reg || i.region === reg;
+        const matchBr = !br || (i.branch && i.branch.toLowerCase().includes(br));
+        
+        const interestVal = i.future_product || "";
+        const matchProd = !prod || interestVal.includes(prod);
+        const isLead = interestVal.trim() !== "";
+
+        return isLead && matchFrom && matchTo && matchReg && matchBr && matchProd;
+      });
+
+      renderTable(filtered);
+    }
+
+    function renderTable(data) {
+      const tbody = document.querySelector('#leadTable tbody');
+      if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:3rem; color:#64748b;">No matching leads found.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = data.map(i => {
+        const dateDisplay = (i._timestamp || "").substring(0, 10).replace(/:/g, '-');
+        return `
+          <tr>
+            <td style="color:var(--text-light)">${dateDisplay}</td>
+            <td style="font-weight:700;">${i.name || 'Anonymous'}</td>
+            <td><a href="tel:${i.mobile}" style="color:var(--primary); text-decoration:none; font-weight:600;">${i.mobile || '-'}</a></td>
+            <td style="color:var(--primary); font-weight:600;">${i.branch}</td>
+            <td>${i.region}</td>
+            <td><span class="badge-purpose">${i.purpose || 'N/A'}</span></td>
+            <td><span class="badge-interest">${i.future_product}</span></td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function exportLeads() {
+      const wb = XLSX.utils.table_to_book(document.getElementById("leadTable"), { sheet: "Leads" });
+      XLSX.writeFile(wb, "CBI_Marketing_Leads.xlsx");
+    }
+
+    init();
+  </script>
+</body>
+</html>

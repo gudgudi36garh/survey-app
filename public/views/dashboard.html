@@ -213,10 +213,26 @@
     </div>
   </div>
 
- <script>
+<script>
   const API_URL = "https://survey-backend.gudgudi36garh.workers.dev/api/responses";
   let allData = [];
 
+  // ─────────────────────────────────────
+  // Helpers
+  // ─────────────────────────────────────
+  function getRecordDate(item) {
+    if (!item.created_at) return null;
+    const d = new Date(item.created_at);
+    return isNaN(d) ? null : d;
+  }
+
+  function formatDate(d) {
+    return d ? d.toLocaleDateString() : "Old Record";
+  }
+
+  // ─────────────────────────────────────
+  // Init
+  // ─────────────────────────────────────
   async function init() {
     try {
       const res = await fetch(API_URL);
@@ -228,24 +244,24 @@
     }
   }
 
+  // ─────────────────────────────────────
+  // Filters
+  // ─────────────────────────────────────
   function applyFilters() {
-    const reg = document.getElementById('regFilter').value;
-    const br = document.getElementById('brSearch').value.toLowerCase();
-    const from = document.getElementById('dateFrom').value;
-    const to = document.getElementById('dateTo').value;
+    const reg = document.getElementById("regFilter").value;
+    const br = document.getElementById("brSearch").value.toLowerCase();
+    const from = document.getElementById("dateFrom").value;
+    const to = document.getElementById("dateTo").value;
 
-    const filtered = allData.filter(i => {
-      let matchDate = true;
-      if (i._file) {
-        const d = i._file.replace("survey_", "").substring(0, 10);
-        if (from && d < from) matchDate = false;
-        if (to && d > to) matchDate = false;
-      }
-      return (
-        matchDate &&
-        (!reg || i.region === reg) &&
-        (!br || (i.branch || "").toLowerCase().includes(br))
-      );
+    const filtered = allData.filter(item => {
+      const d = getRecordDate(item);
+
+      if (from && (!d || d < new Date(from))) return false;
+      if (to && (!d || d > new Date(to))) return false;
+      if (reg && item.region !== reg) return false;
+      if (br && !(item.branch || "").toLowerCase().includes(br)) return false;
+
+      return true;
     });
 
     updateKPIs(filtered);
@@ -254,101 +270,121 @@
     renderTable(filtered);
   }
 
+  // ─────────────────────────────────────
+  // KPIs
+  // ─────────────────────────────────────
   function updateKPIs(data) {
-    document.getElementById('totalCount').innerText = data.length;
+    document.getElementById("totalCount").innerText = data.length;
 
-    const avg = data.length
-      ? (data.reduce((a, b) => a + Number(b.overall || 0), 0) / data.length).toFixed(1)
-      : "0.0";
-    document.getElementById('avgRating').innerText = `${avg} ★`;
+    const avg =
+      data.length > 0
+        ? (
+            data.reduce((sum, i) => sum + Number(i.overall || 0), 0) /
+            data.length
+          ).toFixed(1)
+        : "0.0";
 
-    const trustCount = data.filter(i => i.transparency === 'Yes').length;
-    document.getElementById('trustRate').innerText =
-      `${data.length ? Math.round((trustCount / data.length) * 100) : 0}%`;
+    document.getElementById("avgRating").innerText = `${avg} ★`;
 
-    document.getElementById('leadCount').innerText =
-      data.filter(i => i.future_product && i.future_product.trim() !== '').length;
+    const trustRate = data.length
+      ? Math.round(
+          (data.filter(i => i.transparency === "Yes").length / data.length) *
+            100
+        )
+      : 0;
+
+    document.getElementById("trustRate").innerText = `${trustRate}%`;
+
+    document.getElementById("leadCount").innerText = data.filter(
+      i => i.future_product && i.future_product.trim()
+    ).length;
   }
 
+  // ─────────────────────────────────────
+  // Factor Analysis
+  // ─────────────────────────────────────
   function performFactorAnalysis(data) {
     if (!data.length) return;
 
-    const avgClean = (data.reduce((a, b) => a + Number(b.cleanliness || 0), 0) / data.length).toFixed(1);
-    const avgStaff = (data.reduce((a, b) => a + Number(b.staff_behavior || 0), 0) / data.length).toFixed(1);
-    const resRate = Math.round(
-      (data.filter(i => i.timely === 'Yes').length / data.length) * 100
-    );
+    const avgClean =
+      data.reduce((a, b) => a + Number(b.cleanliness || 0), 0) / data.length;
+    const avgStaff =
+      data.reduce((a, b) => a + Number(b.staff_behavior || 0), 0) /
+      data.length;
+    const resRate =
+      (data.filter(i => i.timely === "Yes").length / data.length) * 100;
 
-    document.getElementById('f-clean').innerText = `${avgClean} / 5.0`;
-    document.getElementById('p-clean').style.width = `${(avgClean / 5) * 100}%`;
+    document.getElementById("f-clean").innerText = `${avgClean.toFixed(1)} / 5.0`;
+    document.getElementById("p-clean").style.width = `${(avgClean / 5) * 100}%`;
 
-    document.getElementById('f-staff').innerText = `${avgStaff} / 5.0`;
-    document.getElementById('p-staff').style.width = `${(avgStaff / 5) * 100}%`;
+    document.getElementById("f-staff").innerText = `${avgStaff.toFixed(1)} / 5.0`;
+    document.getElementById("p-staff").style.width = `${(avgStaff / 5) * 100}%`;
 
-    document.getElementById('f-res').innerText = `${resRate}%`;
-    document.getElementById('p-res').style.width = `${resRate}%`;
+    document.getElementById("f-res").innerText = `${Math.round(resRate)}%`;
+    document.getElementById("p-res").style.width = `${resRate}%`;
   }
 
+  // ─────────────────────────────────────
+  // Rankings
+  // ─────────────────────────────────────
   function renderRankings(data) {
     const stats = {};
+
     data.forEach(i => {
       if (!i.branch) return;
-      if (!stats[i.branch]) stats[i.branch] = { sum: 0, count: 0 };
+      stats[i.branch] ??= { sum: 0, count: 0 };
       stats[i.branch].sum += Number(i.overall || 0);
       stats[i.branch].count++;
     });
 
-    const ranked = Object.keys(stats)
-      .map(name => ({ name, avg: (stats[name].sum / stats[name].count).toFixed(1) }))
+    const ranked = Object.entries(stats)
+      .map(([name, v]) => ({ name, avg: (v.sum / v.count).toFixed(1) }))
       .sort((a, b) => b.avg - a.avg);
 
-    document.getElementById('topBranches').innerHTML =
-      ranked.slice(0, 3).map(b =>
-        `<div class="rank-item"><span class="rank-name">${b.name}</span>
-         <span class="rank-score" style="color:var(--success)">${b.avg} ★</span></div>`
-      ).join('');
+    document.getElementById("topBranches").innerHTML = ranked
+      .slice(0, 3)
+      .map(
+        b =>
+          `<div class="rank-item"><span class="rank-name">${b.name}</span>
+           <span class="rank-score" style="color:var(--success)">${b.avg} ★</span></div>`
+      )
+      .join("");
 
-    document.getElementById('poorBranches').innerHTML =
-      ranked.slice(-3).map(b =>
-        `<div class="rank-item"><span class="rank-name">${b.name}</span>
-         <span class="rank-score" style="color:var(--danger)">${b.avg} ★</span></div>`
-      ).join('');
+    document.getElementById("poorBranches").innerHTML = ranked
+      .slice(-3)
+      .map(
+        b =>
+          `<div class="rank-item"><span class="rank-name">${b.name}</span>
+           <span class="rank-score" style="color:var(--danger)">${b.avg} ★</span></div>`
+      )
+      .join("");
   }
 
+  // ─────────────────────────────────────
+  // Table
+  // ─────────────────────────────────────
   function renderTable(data) {
-    const tbody = document.querySelector('#feedbackTable tbody');
-    tbody.innerHTML = data.map(i => {
-      const date = i._file ? i._file.replace("survey_", "").substring(0, 10) : '';
-      const trust = i.transparency === 'Yes' ? '✅' : '❌';
-      const res = i.timely === 'Yes' ? 'Yes' : 'No';
-      const comment = i.comments || 'N/A';
+    const tbody = document.querySelector("#feedbackTable tbody");
 
-      return `
-        <tr>
-          <td>${date}</td>
-          <td style="font-weight:700; color:var(--primary)">${i.branch || '-'}</td>
-          <td style="text-align:center">${trust}</td>
-          <td style="font-weight:700">${res}</td>
-          <td>${i.cleanliness || 0} ★</td>
-          <td>${i.staff_behavior || 0} ★</td>
-          <td><b>${i.overall || 0} ★</b></td>
-          <td>${i.future_product || '-'}</td>
-          <td class="comment-cell">${comment}</td>
-        </tr>
-      `;
-    }).join('');
+    tbody.innerHTML = data
+      .map(i => {
+        const d = formatDate(getRecordDate(i));
+        return `
+          <tr>
+            <td>${d}</td>
+            <td style="font-weight:700;color:var(--primary)">${i.branch || "-"}</td>
+            <td style="text-align:center">${i.transparency === "Yes" ? "✅" : "❌"}</td>
+            <td style="font-weight:700">${i.timely === "Yes" ? "Yes" : "No"}</td>
+            <td>${i.cleanliness || 0} ★</td>
+            <td>${i.staff_behavior || 0} ★</td>
+            <td><b>${i.overall || 0} ★</b></td>
+            <td>${i.future_product || "-"}</td>
+            <td class="comment-cell">${i.comments || "N/A"}</td>
+          </tr>
+        `;
+      })
+      .join("");
   }
-let date = "—";
-
-if (i.created_at) {
-  const d = new Date(i.created_at);
-  if (!isNaN(d)) {
-    date = d.toLocaleDateString();
-  }
-} else {
-  // fallback for old data
-  date = "Old Record";
-}
 
   init();
 </script>
@@ -356,4 +392,5 @@ if (i.created_at) {
 </body>
 
 </html>
+
 

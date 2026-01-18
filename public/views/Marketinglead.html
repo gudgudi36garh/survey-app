@@ -195,6 +195,22 @@
   const API_URL = "https://survey-backend.gudgudi36garh.workers.dev/api/responses";
   let rawData = [];
 
+  // ─────────────────────────────────────
+  // Helpers (KV-safe)
+  // ─────────────────────────────────────
+  function getRecordDate(item) {
+    if (!item.created_at) return null;
+    const d = new Date(item.created_at);
+    return isNaN(d) ? null : d;
+  }
+
+  function formatDate(d) {
+    return d ? d.toLocaleDateString() : "Old Record";
+  }
+
+  // ─────────────────────────────────────
+  // Init
+  // ─────────────────────────────────────
   async function init() {
     try {
       const res = await fetch(API_URL);
@@ -206,31 +222,38 @@
     }
   }
 
+  // ─────────────────────────────────────
+  // Filters
+  // ─────────────────────────────────────
   function applyFilters() {
-    const from = document.getElementById('dateFrom').value;
-    const to = document.getElementById('dateTo').value;
-    const reg = document.getElementById('regFilter').value;
-    const br = document.getElementById('brSearch').value.toLowerCase();
-    const prod = document.getElementById('prodFilter').value;
+    const from = document.getElementById("dateFrom").value;
+    const to = document.getElementById("dateTo").value;
+    const reg = document.getElementById("regFilter").value;
+    const br = document.getElementById("brSearch").value.toLowerCase();
+    const prod = document.getElementById("prodFilter").value;
 
     const filtered = rawData.filter(i => {
-      if (!i.future_product || i.future_product.trim() === '') return false;
+      if (!i.future_product || !i.future_product.trim()) return false;
 
-      const date = i._file ? i._file.replace("survey_", "").substring(0, 10) : '';
-      const matchFrom = !from || date >= from;
-      const matchTo = !to || date <= to;
-      const matchReg = !reg || i.region === reg;
-      const matchBr = !br || (i.branch || '').toLowerCase().includes(br);
-      const matchProd = !prod || i.future_product.includes(prod);
+      const d = getRecordDate(i);
 
-      return matchFrom && matchTo && matchReg && matchBr && matchProd;
+      if (from && (!d || d < new Date(from))) return false;
+      if (to && (!d || d > new Date(to))) return false;
+      if (reg && i.region !== reg) return false;
+      if (br && !(i.branch || "").toLowerCase().includes(br)) return false;
+      if (prod && !i.future_product.includes(prod)) return false;
+
+      return true;
     });
 
     renderTable(filtered);
   }
 
+  // ─────────────────────────────────────
+  // Table rendering
+  // ─────────────────────────────────────
   function renderTable(data) {
-    const tbody = document.querySelector('#leadTable tbody');
+    const tbody = document.querySelector("#leadTable tbody");
 
     if (!data.length) {
       tbody.innerHTML =
@@ -238,33 +261,27 @@
       return;
     }
 
-    tbody.innerHTML = data.map(i => {
-      const date = i._file ? i._file.replace("survey_", "").substring(0, 10) : '';
-      return `
-        <tr>
-          <td>${date}</td>
-          <td>${i.name || 'Anonymous'}</td>
-          <td>${i.mobile || '-'}</td>
-          <td>${i.branch || '-'}</td>
-          <td>${i.region || '-'}</td>
-          <td>${i.purpose || 'N/A'}</td>
-          <td>${i.future_product}</td>
-        </tr>
-      `;
-    }).join('');
+    tbody.innerHTML = data
+      .map(i => {
+        const date = formatDate(getRecordDate(i));
+        return `
+          <tr>
+            <td>${date}</td>
+            <td>${i.name || "Anonymous"}</td>
+            <td>${i.mobile || "-"}</td>
+            <td>${i.branch || "-"}</td>
+            <td>${i.region || "-"}</td>
+            <td>${i.purpose || "N/A"}</td>
+            <td>${i.future_product}</td>
+          </tr>
+        `;
+      })
+      .join("");
   }
-let date = "—";
 
-if (i.created_at) {
-  const d = new Date(i.created_at);
-  if (!isNaN(d)) {
-    date = d.toLocaleDateString();
-  }
-} else {
-  // fallback for old data
-  date = "Old Record";
-}
-
+  // ─────────────────────────────────────
+  // Export
+  // ─────────────────────────────────────
   function exportLeads() {
     const wb = XLSX.utils.table_to_book(
       document.getElementById("leadTable"),
@@ -279,4 +296,5 @@ if (i.created_at) {
 </body>
 
 </html>
+
 

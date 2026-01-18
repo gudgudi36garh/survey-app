@@ -338,6 +338,17 @@
       `;
     }).join('');
   }
+let date = "—";
+
+if (i.created_at) {
+  const d = new Date(i.created_at);
+  if (!isNaN(d)) {
+    date = d.toLocaleDateString();
+  }
+} else {
+  // fallback for old data
+  date = "Old Record";
+}
 
   init();
 </script>
@@ -345,3 +356,4 @@
 </body>
 
 </html>
+

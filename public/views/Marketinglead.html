@@ -191,71 +191,80 @@
     </div>
   </div>
 
-  <script>
-    let rawData = [];
+ <script>
+  const API_URL = "https://survey-backend.gudgudi36garh.workers.dev/api/responses";
+  let rawData = [];
 
-    async function init() {
-      try {
-        const res = await fetch('/api/responses');
-        rawData = await res.json();
-        applyFilters();
-      } catch (e) { console.error("Load failed", e); }
+  async function init() {
+    try {
+      const res = await fetch(API_URL);
+      if (!res.ok) throw new Error("API failed");
+      rawData = await res.json();
+      applyFilters();
+    } catch (e) {
+      console.error("Load failed", e);
+    }
+  }
+
+  function applyFilters() {
+    const from = document.getElementById('dateFrom').value;
+    const to = document.getElementById('dateTo').value;
+    const reg = document.getElementById('regFilter').value;
+    const br = document.getElementById('brSearch').value.toLowerCase();
+    const prod = document.getElementById('prodFilter').value;
+
+    const filtered = rawData.filter(i => {
+      if (!i.future_product || i.future_product.trim() === '') return false;
+
+      const date = i._file ? i._file.replace("survey_", "").substring(0, 10) : '';
+      const matchFrom = !from || date >= from;
+      const matchTo = !to || date <= to;
+      const matchReg = !reg || i.region === reg;
+      const matchBr = !br || (i.branch || '').toLowerCase().includes(br);
+      const matchProd = !prod || i.future_product.includes(prod);
+
+      return matchFrom && matchTo && matchReg && matchBr && matchProd;
+    });
+
+    renderTable(filtered);
+  }
+
+  function renderTable(data) {
+    const tbody = document.querySelector('#leadTable tbody');
+
+    if (!data.length) {
+      tbody.innerHTML =
+        '<tr><td colspan="7" style="text-align:center; padding:3rem; color:#64748b;">No matching leads found.</td></tr>';
+      return;
     }
 
-    function applyFilters() {
-      const from = document.getElementById('dateFrom').value;
-      const to = document.getElementById('dateTo').value;
-      const reg = document.getElementById('regFilter').value;
-      const br = document.getElementById('brSearch').value.toLowerCase();
-      const prod = document.getElementById('prodFilter').value;
+    tbody.innerHTML = data.map(i => {
+      const date = i._file ? i._file.replace("survey_", "").substring(0, 10) : '';
+      return `
+        <tr>
+          <td>${date}</td>
+          <td>${i.name || 'Anonymous'}</td>
+          <td>${i.mobile || '-'}</td>
+          <td>${i.branch || '-'}</td>
+          <td>${i.region || '-'}</td>
+          <td>${i.purpose || 'N/A'}</td>
+          <td>${i.future_product}</td>
+        </tr>
+      `;
+    }).join('');
+  }
 
-      const filtered = rawData.filter(i => {
-        const rawTs = i._timestamp || "";
-        const entryDate = rawTs.substring(0, 10).replace(/:/g, '-');
+  function exportLeads() {
+    const wb = XLSX.utils.table_to_book(
+      document.getElementById("leadTable"),
+      { sheet: "Leads" }
+    );
+    XLSX.writeFile(wb, "CBI_Marketing_Leads.xlsx");
+  }
 
-        const matchFrom = !from || entryDate >= from;
-        const matchTo = !to || entryDate <= to;
-        const matchReg = !reg || i.region === reg;
-        const matchBr = !br || (i.branch && i.branch.toLowerCase().includes(br));
-        
-        const interestVal = i.future_product || "";
-        const matchProd = !prod || interestVal.includes(prod);
-        const isLead = interestVal.trim() !== "";
+  init();
+</script>
 
-        return isLead && matchFrom && matchTo && matchReg && matchBr && matchProd;
-      });
-
-      renderTable(filtered);
-    }
-
-    function renderTable(data) {
-      const tbody = document.querySelector('#leadTable tbody');
-      if (data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:3rem; color:#64748b;">No matching leads found.</td></tr>';
-        return;
-      }
-      tbody.innerHTML = data.map(i => {
-        const dateDisplay = (i._timestamp || "").substring(0, 10).replace(/:/g, '-');
-        return `
-          <tr>
-            <td style="color:var(--text-light)">${dateDisplay}</td>
-            <td style="font-weight:700;">${i.name || 'Anonymous'}</td>
-            <td><a href="tel:${i.mobile}" style="color:var(--primary); text-decoration:none; font-weight:600;">${i.mobile || '-'}</a></td>
-            <td style="color:var(--primary); font-weight:600;">${i.branch}</td>
-            <td>${i.region}</td>
-            <td><span class="badge-purpose">${i.purpose || 'N/A'}</span></td>
-            <td><span class="badge-interest">${i.future_product}</span></td>
-          </tr>
-        `;
-      }).join('');
-    }
-
-    function exportLeads() {
-      const wb = XLSX.utils.table_to_book(document.getElementById("leadTable"), { sheet: "Leads" });
-      XLSX.writeFile(wb, "CBI_Marketing_Leads.xlsx");
-    }
-
-    init();
-  </script>
 </body>
+
 </html>
